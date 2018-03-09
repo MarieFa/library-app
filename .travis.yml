@@ -7,17 +7,10 @@ dist: trusty
 sudo: required
 
 services:
-  - docker
+  - rabbitmq
+  - mongodb
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install --assume-yes --option Dpkg::Options::="--force-confnew" docker-ce
 install: true
-
-before_script:
-  - docker --version
-  - docker-compose --version
-
 script:
   - cd library-service && ./gradlew clean build && cd ..
   - cd library-enrichment && ./gradlew clean build

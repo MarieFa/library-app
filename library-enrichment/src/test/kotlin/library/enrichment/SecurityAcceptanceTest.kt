@@ -6,6 +6,8 @@ import io.restassured.response.Response
 import io.restassured.response.ValidatableResponse
 import io.restassured.specification.RequestSpecification
 import library.enrichment.gateways.library.LibraryClient
+import org.hamcrest.Matchers
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -41,8 +43,8 @@ internal class SecurityAcceptanceTest {
         }
 
         @Test fun `actuator health endpoint can be accessed by anyone`() {
-            // status 503 because RabbitMQ won't be available
-            given { auth().none() } `when` { get("/actuator/health") } then { statusCode(503) }
+            // status 503 because RabbitMQ won't be available in every environment
+            given { auth().none() } `when` { get("/actuator/health") } then { statusCode(either(equalTo(200)).or(equalTo(503))) }
         }
 
         @ValueSource(strings = ["beans", "conditions", "configprops", "env", "loggers",

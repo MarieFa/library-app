@@ -46,6 +46,13 @@ fun LogRecord.firstEntry() = entries.findFirst().orElseThrow { IllegalStateExcep
 fun LogRecord.warningMessages() = getEntries(LogLevel.WARN)
         .map { it.message }
         .collect(toList())
+
 fun LogRecord.errorMessages() = getEntries(LogLevel.ERROR)
         .map { it.message }
         .collect(toList())
+
+fun ifNotInCiEnvironment(body: () -> Unit) {
+    if (System.getenv("TRAVIS") != "true") {
+        body()
+    }
+}

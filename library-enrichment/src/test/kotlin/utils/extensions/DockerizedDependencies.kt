@@ -4,6 +4,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
+import utils.ifNotInCiEnvironment
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -32,16 +33,20 @@ private abstract class DockerizedDependencyExtension(
     private val dockerCompose = "docker-compose -f src/test/resources/$dockerComposeFile"
     private val log = ConcurrentLinkedQueue<String>()
 
-    override fun beforeAll(context: ExtensionContext) = onlyInFirst(context) {
-        execute("$dockerCompose down").waitFor()
-        execute("$dockerCompose up")
-        if (!waitUntilServiceWasStarted()) {
-            error("service did not start in time: ${javaClass.simpleName}")
+    override fun beforeAll(context: ExtensionContext) = ifNotInCiEnvironment {
+        onlyInFirst(context) {
+            execute("$dockerCompose down").waitFor()
+            execute("$dockerCompose up")
+            if (!waitUntilServiceWasStarted()) {
+                error("service did not start in time: ${javaClass.simpleName}")
+            }
         }
     }
 
-    override fun afterAll(context: ExtensionContext) = onlyInFirst(context) {
-        execute("$dockerCompose down").waitFor()
+    override fun afterAll(context: ExtensionContext) = ifNotInCiEnvironment {
+        onlyInFirst(context) {
+            execute("$dockerCompose down").waitFor()
+        }
     }
 
     private fun execute(command: String): Process {
@@ -93,5 +98,4 @@ private abstract class DockerizedDependencyExtension(
 
     private val ExtensionContext.store: ExtensionContext.Store
         get() = getStore(ExtensionContext.Namespace.create("DockerizedDependencies[$dockerComposeFile]"))
-
 }

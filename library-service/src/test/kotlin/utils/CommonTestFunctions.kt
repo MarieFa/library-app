@@ -40,3 +40,9 @@ fun <T : Any> executeAsUserWithRole(username: String = "testuser", password: Str
         }
     }
 }
+
+fun ifNotInCiEnvironment(body: () -> Unit) {
+    if (System.getenv("TRAVIS") != "true") {
+        body()
+    }
+}
